@@ -1,4 +1,5 @@
 import os
+import unittest
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk
@@ -6,8 +7,6 @@ from PIL import Image
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import unittest
-
 
 
 class ApoProject:
@@ -17,32 +16,48 @@ class ApoProject:
         self.image_path = None
         self.root = Tk()
         self.menubar = Menu(self.root)  # Creates empty area that can contain menus
-        self.root.title("APO Projekt")
+        self.root.title("Projekt")
         self.root.geometry("300x300")
         self.bg_default = "#2C2F33"
         self.fg_default = "#BBBBBB"
         self.fg_button_clicked = ""
-        #self.open_images_list = []
-        #self.loaded_images = []
+        self.loaded_image_data = None
+        self.edited_image_data = None
+        # self.open_images_list = []
+        # self.loaded_images = []
 
     def donothing(self):
         print("do nothing function")
 
     def open_img_as_tuple(self, path=None):
-        """ Returns output list where index number:
+        """
+        Returns output list where index number:
            [0] is file name,
            [1] contains colour values of image
         """
         if not path:
             path = filedialog.askopenfilename(initialdir=os.getcwd())
         if path:
-            img = Image.open(path)#os.path.basename(path)
-            print(tuple(img.getdata())[:10])
-            print(os.path.basename(path))
-            return [os.path.basename(path), tuple(img.getdata())]
+            img = Image.open(path)  # os.path.basename(path)
+            self.loaded_image_data = [os.path.basename(path), tuple(img.getdata()), img]
+            return self.loaded_image_data
         print("Image not chosen")
 
+    def save_image(self):
+        """
+        Super basic image saving feature
+        """
+        self.edited_image_data = Image.new(self.loaded_image_data[2].mode,
+                                           self.loaded_image_data[2].size)
+        self.edited_image_data.putdata(self.loaded_image_data[1])
+        path = filedialog.asksaveasfilename(filetypes=(('Bitmap file', '.bmp'), ("Any", '.*'),))  # self.loaded_image_data[0][-3:]
+        self.edited_image_data.save(path + ".bmp", format='BMP')
+
     def create_histogram_greyscale(self, img=None):
+        """
+        Displays histogram for greyscale image.
+        img=None parameter allows to prevent certain issue
+        """
         if img is None:
             img = self.open_img_as_tuple()
 
@@ -51,7 +66,7 @@ class ApoProject:
         for value in img[1]:
             values_count[value] += 1
 
-        x_axis = tuple([i for i in range(256)]) #
+        x_axis = tuple([i for i in range(256)])
         y_axis = values_count
         plt.title(f"Histogram - {img[0]}")
         plt.bar(x_axis, y_axis)
@@ -67,23 +82,26 @@ class ApoProject:
 
         def compute_values_count(channel_index):
             for value in img[1]:
-                y_axis[value[channel_index]] += 1
+                luminence_value = int(value[channel_index])
+                y_axis[luminence_value] += 1
 
         x_axis = [i for i in range(256)]
         compute_values_count(0)
         plt.figure()
         plt.bar(x_axis, y_axis)
-        plt.title(f'Histogram - kanał czerwony - {img[0]}') # Red channel
+        plt.title(f'Histogram - kanał czerwony - {img[0]}')  # Red channel
 
+        y_axis = [0 for i in range(256)]
         compute_values_count(1)
         plt.figure()
         plt.bar(x_axis, y_axis)
-        plt.title(f'Histogram - kanał zielony - {img[0]}') # Green channel
+        plt.title(f'Histogram - kanał zielony - {img[0]}')  # Green channel
 
+        y_axis = [0 for i in range(256)]
         compute_values_count(2)
         plt.figure()
         plt.bar(x_axis, y_axis)
-        plt.title(f'Histogram - kanał niebieski - {img[0]}') # Blue channel
+        plt.title(f'Histogram - kanał niebieski - {img[0]}')  # Blue channel
 
         plt.show()
 
@@ -91,27 +109,28 @@ class ApoProject:
         """
         Prints file content to console
         """
-        arr = self.open_img_as_tuple()[1]
-        print(arr)
+        img_tuple = self.open_img_as_tuple()[1]
+        print(img_tuple)
 
     def print_image_type(self):
-        """ Print type of image - color, greyscale or binary"""
-        arr = self.open_img_as_tuple()
-        if type(arr[1][0]).__name__ == "tuple":
+        """
+        Print type of image - color, greyscale or binary
+        """
+        img_tuple = self.open_img_as_tuple()
+        if type(img_tuple[1][0]).__name__ == "tuple":
             print("Obraz kolorowy")
         else:
-            print(f"Obraz jest typu: {self.check_greyscale_or_binary(arr)}")
+            print(f"Obraz jest typu: {self.check_greyscale_or_binary(img_tuple)}")
 
     def check_greyscale_or_binary(self, img):
-        """ Description:
-            Use only for greyscale images.
-            Returns False if image is binary,
-            if it is in greyscale, this will return True
+        """
+        Use only for greyscale images.
             Parameters:
-                'img' - tuple filled with numbers
+                'img' - tuple filled with value describing RGB values for pixels
+            Returns False if image is binary.
+            If it is in greyscale, this will return True
             """
-        for value in img:
-            test = value
+        for value in img[1]:
             binary_values = [0, 255]
             if value not in binary_values:
                 return "czarno-biały"
@@ -122,9 +141,9 @@ class ApoProject:
         Creates menu on top side of the window
         """
         file_menu = Menu(self.menubar, tearoff=0)
-        file_menu.add_command(label="Nowy", command=self.donothing)
+        file_menu.add_command(label="Nowy", command=self.donothing, state=DISABLED)
         file_menu.add_command(label="Otwórz", command=self.menu_file_load_image)
-        file_menu.add_command(label="Zapisz", command=self.donothing)
+        file_menu.add_command(label="Zapisz", command=self.save_image)
         file_menu.add_separator()
         file_menu.add_command(label="Nic nie rób", command=self.donothing)
         self.menubar.add_cascade(label="Plik", menu=file_menu)
@@ -149,6 +168,9 @@ class ApoProject:
         self.root.mainloop()
 
     def menu_help_about(self):
+        """
+        Displays 'O aplikacji' - about menu
+        """
         window = Toplevel()
         window.title("O aplikacji")
         mainframe = Frame(window, padx="70", pady="15", bg=self.bg_default)
@@ -179,12 +201,14 @@ class ApoProject:
             picture_label = Label(root)
             picture_label.pack()
             image = Image.open(img_path)
+            self.loaded_image_data = [os.path.basename(img_path), tuple(image.getdata()), image]
             image = image.resize((self.resize_width, self.resize_height), Image.ANTIALIAS)
             selected_picture = ImageTk.PhotoImage(image)
             picture_label.configure(image=selected_picture)
             self.root.mainloop()
         else:
             print("Image was not chosen")
+
 
 class TestApoprojectClass(unittest.TestCase):
     @classmethod
@@ -197,23 +221,22 @@ class TestApoprojectClass(unittest.TestCase):
         print(cls.test_pic_greyscale_dir)
         cls.test_pic_colour_open = Image.open(cls.test_pic_colour_dir)
         cls.test_pic_colour_data = tuple(cls.test_pic_colour_open.getdata())  # Image data as tuple
-        cls.main = ApoProject()
-
+        cls.main = ApoProject()  # Instance of ApoProject
 
     def test_open_image_as_tuple(self):
         self.assertEqual(self.test_pic_greyscale_data,
-                        self.main.open_img_as_tuple(path=self.test_pic_greyscale_dir)[1])
+                         self.main.open_img_as_tuple(path=self.test_pic_greyscale_dir)[1])
         self.assertEqual(self.test_pic_colour_data,
                          self.main.open_img_as_tuple(path=self.test_pic_colour_dir)[1])
 
-
     def test_histogram_greyscale(self):
-        #Todo
+        # Todo
         pass
 
     def test_histogram_color(self):
-        #Todo
+        # Todo
         pass
+
 
 if __name__ == "__main__":
     #test = TestApoprojectClass()
