@@ -1,5 +1,4 @@
-# ImageProcessingProject
- Refactor branch of the project.  
+# ImageProcessingProject 
  Image processing project for university written in Python. 
  Currently Work in progress
 
