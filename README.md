@@ -1,10 +1,15 @@
 # ImageProcessingProject
-![image](https://user-images.githubusercontent.com/35972878/116554611-af863d00-a8fb-11eb-92af-c6d54d294c65.png)
+![image](https://user-images.githubusercontent.com/35972878/123304594-64fdf700-d51f-11eb-8843-140e2e18d8c7.png)
 
- Image processing project for university written in Python.  
- Polish is used as interface language, but I might research possibilities of changing language to English.  
- Comments are in English for easier understanding of code.
- Currently Work in progress
+
+ Image processing project for university completed in Python, allowing to edit and save images.
+ Some of used libraries are: tkinter, opencv, PIL, numpy, matplotlib
+ Operations are available mostly for greyscale images.
+ It uses Polish as interface language, but code is documented in English.
+ Usage instruction in Polish can be found here:
+ [Instrukcja.pdf](https://github.com/Deelite34/ImageProcessingProject/files/6711000/Instrukcja.pdf)
+
+
 
 # installation
 Move to the desired directory `cd .`  
