@@ -12,14 +12,12 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from scipy.signal import convolve2d as conv2
 
-
-
 try:
-    from StudentProject import ApoProjectCore
+    from student_project import ApoProjectCore
 except ImportError as er:
     while True:
         print(er)
-        input("Run program trough StudenrProject.py!")
+        input("Run program trough student_project.py!")
 
 
 class MenuBarFile(tk.Menu):
